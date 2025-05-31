@@ -1,0 +1,135 @@
+@use './reset';
+@use './transition';
+
+.table-container > .el-card__header {
+  padding: calc(var(--el-card-padding) - 10px) var(--el-card-padding);
+}
+
+.link-type,
+.link-type:focus {
+  color: #337ab7;
+  cursor: pointer;
+
+  &:hover {
+    color: rgb(32 160 255);
+  }
+}
+
+/* 美化滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+// 滑动条背景
+::-webkit-scrollbar-track {
+  width: 6px;
+  // background: rgba(#101f1c, 0.1);
+  border-radius: 2em;
+}
+
+// 滑动条本身
+::-webkit-scrollbar-thumb {
+  min-height: 6px;
+  cursor: pointer;
+  background-color: #dddee0;
+  background-clip: padding-box;
+  border-radius: 2em;
+  transition: background-color 0.3s;
+}
+
+// 滑动条鼠标悬浮时
+::-webkit-scrollbar-thumb:hover {
+  background-color: #c7c9cc;
+}
+
+/* el-dialog 样式全局修改 */
+.el-dialog {
+  border-radius: 10px !important;
+
+  .el-dialog__body {
+    max-height: 500px;
+    padding-right: 5px;
+    overflow-y: auto;
+  }
+}
+
+/* el-table 样式全局修改 */
+// 设置圆角边框
+.el-table {
+  height: 100% !important;
+  border: 1px solid var(--el-border-color-lighter) !important;
+  border-radius: 10px;
+}
+// 设置表头样式
+.el-table thead th {
+  height: 48px;
+  color: #333 !important;
+  background: #f8f8f8 !important;
+}
+
+// 解决因设置fix属性时左边框不显示问题
+.el-table-fixed-column--right thead th:not(.is-hidden):last-child {
+  right: -1px !important;
+}
+
+.el-table__row {
+  .el-table-fixed-column--right td:not(.is-hidden):last-child {
+    right: -1px !important;
+  }
+}
+
+// 以下为去除多余边框
+.el-table--border::before {
+  width: 0 !important;
+}
+
+.el-table--border::after {
+  width: 0 !important;
+}
+
+.el-table__inner-wrapper::before {
+  height: 0 !important;
+}
+
+.el-table--border .el-table__inner-wrapper::after {
+  height: 0 !important;
+}
+
+.el-table__border-left-patch {
+  width: 0 !important;
+}
+
+.el-table__border-right-patch {
+  width: 0 !important;
+}
+
+.el-table--border .el-table__cell:last-child {
+  border-right: none !important;
+}
+
+// .el-table__row:last-child {
+//   .el-table__cell {
+//     border-bottom: 1px solid transparent !important;
+//   }
+// }
+
+/* el-form 样式全局修改 */
+.el-form--inline .el-form-item {
+  margin-right: 18px !important;
+}
+
+/* el-message-box 样式全局修改 */
+.el-message-box {
+  border-radius: 10px !important;
+}
+
+/* el-message-box 样式全局修改 */
+.el-message {
+  border-radius: 999px !important;
+}
+
+/* el-popper 样式全局修改 */
+.el-popper {
+  border-radius: 10px !important;
+}
