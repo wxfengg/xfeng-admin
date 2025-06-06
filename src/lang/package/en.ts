@@ -55,5 +55,6 @@ export default {
     fixedHeader: 'Fixed Header',
     sidebarLogo: 'Sidebar Logo',
     watermark: 'Watermark',
+    about: 'About',
   },
 }

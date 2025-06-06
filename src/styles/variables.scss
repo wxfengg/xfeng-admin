@@ -4,7 +4,12 @@
   --menu-background: #fff; // 菜单栏背景颜色
   --menu-text: #1d1d1d; // 菜单栏文字颜色
   --menu-active-text: var(--el-menu-active-color); // 菜单激活文字颜色
-  --menu-active-bgc: #eff0ff; // 菜单激活背景颜色
+  --menu-active-bgc: color-mix(
+    in srgb,
+    var(--el-menu-active-color) 10%,
+    transparent
+  ); // 菜单激活背景颜色
+
   --menu-hover: #f0f0f0; // 菜单栏鼠标滑过显示颜色
   --sidebar-logo-background: #fff; // logo区域背景颜色
 
