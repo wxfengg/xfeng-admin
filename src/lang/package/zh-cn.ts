@@ -55,5 +55,6 @@ export default {
     fixedHeader: '固定 Header',
     sidebarLogo: '侧边栏 Logo',
     watermark: '开启水印',
+    about: '关于',
   },
 }

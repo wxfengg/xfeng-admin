@@ -2,34 +2,38 @@
   <el-color-picker
     v-model="currentColor"
     :predefine="colorPresets"
+    show-alpha
     popper-class="theme-picker-dropdown" />
 </template>
 
 <script lang="ts" setup>
-const props = defineProps({
-  modelValue: String,
-})
+import { useSettingsStore } from '@/store'
 
-const emit = defineEmits(['update:modelValue'])
+const settingsStore = useSettingsStore()
 
 // 定义颜色预设
 const colorPresets = [
-  '#409EFF',
-  '#ff4500',
-  '#ff8c00',
-  '#90ee90',
-  '#00ced1',
-  '#1e90ff',
-  '#c71585',
-  'rgba(255, 69, 0, 0.68)',
-  'rgb(255, 120, 0)',
-  'hsva(120, 40, 94)',
+  '#646cff',
+  '#3b82f6',
+  '#8b5cf6',
+  '#a855f7',
+  '#0ea5e9',
+  '#06b6d4',
+  '#f43f5e',
+  '#ef4444',
+  '#ec4899',
+  '#d946ef',
+  '#f97316',
+  '#f59e0b',
+  '#eab308',
+  '#84cc16',
+  '#22c55e',
+  '#10b981',
 ]
 
-const currentColor = ref(props.modelValue)
-
-watch(currentColor, (newValue) => {
-  emit('update:modelValue', newValue)
+const currentColor = computed({
+  get: () => settingsStore.themeColor,
+  set: (value) => settingsStore.changeThemeColor(value),
 })
 </script>
 
