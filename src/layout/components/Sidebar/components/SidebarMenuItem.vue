@@ -213,6 +213,10 @@ function resolvePath(routePath: string) {
   border-radius: 10px !important;
 }
 
+.el-sub-menu.is-active .el-sub-menu__title {
+  color: $menu-active-text !important;
+}
+
 .el-sub-menu__title:hover {
   background-color: $menu-hover;
 }
