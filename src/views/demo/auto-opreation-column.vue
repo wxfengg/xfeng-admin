@@ -2,8 +2,12 @@
 <template>
   <LayoutCom :show-search="false">
     <template #content>
-      <div class="text-14px color-#999">
-        该组件适用于含有操作列的表格。在某些情况下，按钮可能需要根据数据状态或其他条件动态展示，无法预设固定宽度。操作列组件能根据按钮数量自适应宽度，不需要再手动设置宽度。
+      <div class="flex-y-center text-14px color-#999">
+        <TextTips
+          content="该组件适用于含有操作列的表格。在某些情况下，按钮可能需要根据数据状态或其他条件动态展示，无法预设固定宽度。操作列组件能根据按钮数量自适应宽度，不需要再手动设置宽度。" />
+        <span class="ml-5px"
+          >该组件适用于含有操作列的表格。在某些情况下，按钮可能需要根据数据状态或其他条件动态展示，无法预设固定宽度。操作列组件能根据按钮数量自适应宽度，不需要再手动设置宽度。</span
+        >
       </div>
       <div class="mt-10px">
         <el-checkbox v-model="checked1" label="查看" size="large" />
@@ -60,6 +64,7 @@
 
 <script lang="ts" setup>
 import OperationColumn from '@/components/OperationColumn/index.vue'
+import TextTips from '@/components/TextTips/index.vue'
 
 const checked1 = ref(true)
 const checked2 = ref(false)
