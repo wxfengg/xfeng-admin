@@ -181,6 +181,19 @@ export default defineMock([
           },
           children: [
             {
+              path: 'opreation-column',
+              component: 'demo/auto-opreation-column',
+              name: 'autoOpreationColumn',
+              meta: {
+                title: '自适应表格操作列',
+                icon: '',
+                hidden: false,
+                keepAlive: false,
+                alwaysShow: false,
+                params: null,
+              },
+            },
+            {
               path: 'wang-editor',
               component: 'demo/wang-editor',
               name: 'WangEditor',
