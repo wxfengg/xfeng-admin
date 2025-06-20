@@ -1,83 +1,68 @@
 <template>
   <div class="hint-tip-container">
-    <el-tooltip
-      ref="tooltipRef"
-      v-bind="$attrs"
-      :effect="effect"
-      :content="content"
-      :placement="placement"
-      :popper-class="['hint-tooltip', popperClass]"
-      :show-arrow="showArrow"
-      :show-after="showDelay"
-      :hide-after="hideDelay">
-      <template #content>
-        <slot name="content"></slot>
-      </template>
-      <span class="trigger-icon">
-        <slot name="icon">
-          <el-icon :size="iconSize" :color="iconColor">
-            <component :is="iconComponent" />
-          </el-icon>
-        </slot>
-      </span>
-    </el-tooltip>
+    <component
+      :is="
+        h(
+          ElTooltip,
+          { ...$attrs, ...props, ref: tooltipRef },
+          {
+            ...$slots,
+            default: () =>
+              $slots.default
+                ? $slots.default()
+                : h(
+                    'span',
+                    { class: 'trigger-icon' },
+                    h(
+                      ElIcon,
+                      {
+                        size: props.iconSize,
+                        color: props.iconColor,
+                      },
+                      h(props.iconComponent)
+                    )
+                  ),
+          }
+        )
+      " />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ElTooltip, ElIcon } from 'element-plus'
+import { h, getCurrentInstance } from 'vue'
+import {
+  type ElTooltipProps,
+  ElTooltip,
+  ElIcon,
+  TooltipInstance,
+} from 'element-plus'
 import { InfoFilled } from '@element-plus/icons-vue'
 
-/**
- * TextTip 组件
- * 用于显示提示信息的图标，支持自定义内容和样式
- * 支持更换icon、位置
- */
+interface TextTipProps {
+  iconComponent?: any
+  iconSize?: number | string
+  iconColor?: string
+}
+
 // 定义组件props
 const props = withDefaults(
-  defineProps<{
-    content?: string
-    placement?:
-      | 'top'
-      | 'top-start'
-      | 'top-end'
-      | 'bottom'
-      | 'bottom-start'
-      | 'bottom-end'
-      | 'left'
-      | 'left-start'
-      | 'left-end'
-      | 'right'
-      | 'right-start'
-      | 'right-end'
-    effect?: 'dark' | 'light'
-    iconComponent?: any
-    iconSize?: number | string
-    iconColor?: string
-    showArrow?: boolean
-    showDelay?: number
-    hideDelay?: number
-    popperClass?: string
-  }>(),
+  defineProps<TextTipProps & Partial<ElTooltipProps>>(),
   {
     content: '默认文字内容',
     placement: 'top',
-    effect: 'dark',
-    iconComponent: InfoFilled,
-    iconColor: '#999',
-    iconSize: 16,
+    popperClass: 'hint-tooltip',
     showArrow: true,
-    popperClass: '',
+    iconComponent: InfoFilled,
+    iconSize: 16,
+    iconColor: '#999',
   }
 )
 
-const tooltipRef = ref<InstanceType<typeof ElTooltip> | null>(null)
-
-// 暴露方法，允许外部控制显示/隐藏
-defineExpose({
-  show: () => tooltipRef.value?.onOpen(),
-  hide: () => tooltipRef.value?.hide(),
-})
+const vm = getCurrentInstance()
+const tooltipRef = (ref: Element | ComponentPublicInstance | null) => {
+  if (!ref || !vm) return
+  vm.exposeProxy = vm.exposed = (ref as TooltipInstance) || {}
+}
 </script>
 
 <style lang="scss">
@@ -98,10 +83,9 @@ defineExpose({
 
   // 自定义tooltip样式
   .hint-tooltip {
-    max-width: 300px;
+    max-width: 500px;
     padding: 12px;
     line-height: 1.5;
-    border-radius: 8px;
     box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
 
     &.el-tooltip__popper.is-dark {
