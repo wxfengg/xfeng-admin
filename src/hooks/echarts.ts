@@ -1,251 +1,141 @@
-import * as echarts from 'echarts/core'
-import {
-  BarChart,
-  GaugeChart,
-  LineChart,
-  PictorialBarChart,
-  PieChart,
-  RadarChart,
-  ScatterChart,
-} from 'echarts/charts'
-import type {
-  BarSeriesOption,
-  GaugeSeriesOption,
-  LineSeriesOption,
-  PictorialBarSeriesOption,
-  PieSeriesOption,
-  RadarSeriesOption,
-  ScatterSeriesOption,
-} from 'echarts/charts'
-import {
-  DatasetComponent,
-  GridComponent,
-  LegendComponent,
-  TitleComponent,
-  ToolboxComponent,
-  TooltipComponent,
-  TransformComponent,
-} from 'echarts/components'
-import type {
-  DatasetComponentOption,
-  GridComponentOption,
-  LegendComponentOption,
-  TitleComponentOption,
-  ToolboxComponentOption,
-  TooltipComponentOption,
-} from 'echarts/components'
-import { LabelLayout, UniversalTransition } from 'echarts/features'
-import { CanvasRenderer } from 'echarts/renderers'
-import { useElementSize } from '@vueuse/core'
-import { useSettingsStore } from '@/store'
+import * as echarts from 'echarts'
 
-export type ECOption = echarts.ComposeOption<
-  | BarSeriesOption
-  | LineSeriesOption
-  | PieSeriesOption
-  | ScatterSeriesOption
-  | PictorialBarSeriesOption
-  | RadarSeriesOption
-  | GaugeSeriesOption
-  | TitleComponentOption
-  | LegendComponentOption
-  | TooltipComponentOption
-  | GridComponentOption
-  | ToolboxComponentOption
-  | DatasetComponentOption
->
-
-echarts.use([
-  TitleComponent,
-  LegendComponent,
-  TooltipComponent,
-  GridComponent,
-  DatasetComponent,
-  TransformComponent,
-  ToolboxComponent,
-  BarChart,
-  LineChart,
-  PieChart,
-  ScatterChart,
-  PictorialBarChart,
-  RadarChart,
-  GaugeChart,
-  LabelLayout,
-  UniversalTransition,
-  CanvasRenderer,
-])
-
-interface ChartHooks {
-  onRender?: (chart: echarts.ECharts) => void | Promise<void>
-  onUpdated?: (chart: echarts.ECharts) => void | Promise<void>
-  onDestroy?: (chart: echarts.ECharts) => void | Promise<void>
+/**
+ * ECharts Hook 选项 定义成类型后续方便拓展
+ * @property loading 是否开启loading，默认开启
+ * @property resize 是否开启图表自适应，默认开启
+ * @property map 是否开启地图模式，默认不开启, 传入地图配置后开启
+ */
+export interface HookOptions {
+  loading?: boolean
+  resize?: boolean
+  map?: {
+    mapName: string // 注册地图名称
+    geoJson: any // 地图json数据
+    specialAreas?: object // 特殊区域配置
+  }
 }
 
 /**
- * use echarts
- *
- * @param optionsFactory echarts options factory function
- * @param darkMode dark mode
+ * Loadning 选项 定义成类型后续方便拓展
+ * @property loadingText loading文本，默认'正在加载数据...'
+ * @property textColor 文本颜色，默认'#000'
+ * @property maskColor 遮罩颜色，默认'transparent'
  */
-export function useEcharts<T extends ECOption>(
-  optionsFactory: () => T,
-  hooks: ChartHooks = {}
-) {
-  const scope = effectScope()
+export interface LoadingOptions {
+  text?: string // loading文本
+  textColor?: string // 文本颜色
+  maskColor?: string // 遮罩颜色
+}
 
-  const darkMode = ref(true)
+/**
+ * 自定义 ECharts Hook
+ * @param initOptions ECharts图表初始配置项
+ * @param hookOptions hook 配置选项
+ * @returns
+ */
+export const useEcharts = (
+  initOptions: echarts.EChartsCoreOption,
+  hookOptions?: HookOptions
+) => {
+  // 传入了 hookOptions 就是用传入的值。如果没有，则使用默认值。
+  hookOptions = {
+    loading: true,
+    resize: true,
+    ...hookOptions,
+  }
 
   const domRef = ref<HTMLElement | null>(null)
-  const initialSize = { width: 0, height: 0 }
-  const { width, height } = useElementSize(domRef, initialSize)
+  const { width, height } = useElementSize(domRef)
 
-  let chart: echarts.ECharts | null = null
-  const chartOptions: T = optionsFactory()
+  let chartInstance: echarts.ECharts | null = null
 
-  const themeStore = useSettingsStore()
-  const {
-    onRender = (instance) => {
-      const textColor = darkMode.value
-        ? 'rgb(224, 224, 224)'
-        : 'rgb(31, 31, 31)'
-      const maskColor = darkMode.value
-        ? 'rgba(0, 0, 0, 0.4)'
-        : 'rgba(255, 255, 255, 0.8)'
+  /** 初始化图表实例 */
+  const initChart = async (loadingOptions?: LoadingOptions) => {
+    if (!domRef.value || width.value <= 0 || height.value <= 0) return
+    await nextTick()
+    chartInstance = echarts.init(domRef.value)
 
-      instance.showLoading({
-        color: themeStore.themeColor,
-        textColor,
-        fontSize: 14,
-        maskColor,
-      })
-    },
-    onUpdated = (instance) => {
-      instance.hideLoading()
-    },
-    onDestroy,
-  } = hooks
-
-  /**
-   * whether can render chart
-   *
-   * when domRef is ready and initialSize is valid
-   */
-  function canRender() {
-    return domRef.value && initialSize.width > 0 && initialSize.height > 0
-  }
-
-  /** is chart rendered */
-  function isRendered() {
-    return Boolean(domRef.value && chart)
-  }
-
-  /**
-   * update chart options
-   *
-   * @param callback callback function
-   */
-  async function updateOptions(
-    callback: (opts: T, optsFactory: () => T) => ECOption = () => chartOptions
-  ) {
-    if (!isRendered()) return
-
-    const updatedOpts = callback(chartOptions, optionsFactory)
-
-    Object.assign(chartOptions, updatedOpts)
-
-    if (isRendered()) {
-      chart?.clear()
+    // 如果开启地图模式，注册地图数据
+    if (hookOptions.map) {
+      const { mapName, geoJson, specialAreas } = hookOptions.map
+      // 注册地图数据
+      echarts.registerMap(
+        mapName,
+        (geoJson.value as any) || (geoJson as any),
+        specialAreas as any
+      )
     }
 
-    chart?.setOption({ ...updatedOpts, backgroundColor: 'transparent' })
+    // 开启loading
+    showLoading(loadingOptions)
 
-    await onUpdated?.(chart!)
+    const opts: any = initOptions.value || initOptions
+
+    chartInstance?.setOption(opts)
   }
 
-  function setOptions(options: T) {
-    chart?.setOption(options)
+  /** 设置图表配置项 */
+  const setOptions = async (
+    options: echarts.EChartsCoreOption,
+    isReset?: boolean,
+    lazyUpdate?: boolean
+  ) => {
+    if (!chartInstance) return
+    chartInstance?.setOption(options, isReset, lazyUpdate)
+    // 更新图表配置项后，关闭loading
+    hideLoading()
   }
 
-  /** render chart */
-  async function render() {
-    if (!isRendered()) {
-      const chartTheme = darkMode.value ? 'dark' : 'light'
+  /** 图表自适应 */
+  const resize = () => {
+    if (!Boolean(domRef.value && chartInstance) || !hookOptions.resize) return
+    chartInstance?.resize()
+  }
 
-      await nextTick()
+  /** 销毁图表 */
+  const disposeChart = () => {
+    if (!chartInstance) return
+    chartInstance?.dispose()
+    chartInstance = null
+  }
 
-      chart = echarts.init(domRef.value, chartTheme)
+  /** 打开loading */
+  const showLoading = (loadingOptions?: LoadingOptions) => {
+    if (!chartInstance || !hookOptions.loading) return
 
-      chart.setOption({ ...chartOptions, backgroundColor: 'transparent' })
-
-      await onRender?.(chart)
+    loadingOptions = {
+      text: '正在加载数据...',
+      textColor: '#000',
+      maskColor: 'transparent',
+      ...loadingOptions,
     }
+    console.log('🚀 ~ showLoading ~ loadingOptions:', loadingOptions)
+    chartInstance.showLoading(loadingOptions)
   }
 
-  /** resize chart */
-  function resize() {
-    chart?.resize()
+  /** 关闭loading */
+  const hideLoading = () => {
+    if (!chartInstance) return
+    chartInstance.hideLoading()
   }
 
-  /** destroy chart */
-  async function destroy() {
-    if (!chart) return
-
-    await onDestroy?.(chart)
-    chart?.dispose()
-    chart = null
-  }
-
-  /** change chart theme */
-  async function changeTheme() {
-    await destroy()
-    await render()
-    await onUpdated?.(chart!)
-  }
-
-  /**
-   * render chart by size
-   *
-   * @param w width
-   * @param h height
-   */
-  async function renderChartBySize(w: number, h: number) {
-    initialSize.width = w
-    initialSize.height = h
-
-    // size is abnormal, destroy chart
-    if (!canRender()) {
-      await destroy()
-
-      return
-    }
-
-    // resize chart
-    if (isRendered()) {
-      resize()
-    }
-
-    // render chart
-    await render()
-  }
-
+  // 当图表的宽高发生改变时，触发图表的resize方法来自适应
+  const scope = effectScope()
   scope.run(() => {
-    watch([width, height], ([newWidth, newHeight]) => {
-      renderChartBySize(newWidth, newHeight)
-    })
-
-    watch(darkMode, () => {
-      changeTheme()
-    })
+    watch([width, height], () => resize())
   })
 
   onScopeDispose(() => {
-    destroy()
-    scope.stop()
+    disposeChart() // 销毁图表实例
+    scope.stop() // 停止作用域监听
   })
 
   return {
     domRef,
-    updateOptions,
+    initChart,
     setOptions,
+    showLoading,
+    hideLoading,
   }
 }

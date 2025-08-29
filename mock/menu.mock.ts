@@ -169,17 +169,30 @@ export default defineMock([
           ],
         },
         {
-          path: '/component',
+          path: '/demo',
           component: 'Layout',
-          name: '/component',
+          name: 'Demos',
           meta: {
-            title: '组件封装',
+            title: 'Demos',
             icon: 'menu',
             hidden: false,
             alwaysShow: false,
             params: null,
           },
           children: [
+            {
+              path: 'echarts',
+              component: 'demo/echarts/index',
+              name: 'EchartsDemo',
+              meta: {
+                title: 'Echarts图表',
+                icon: '',
+                hidden: false,
+                keepAlive: false,
+                alwaysShow: false,
+                params: null,
+              },
+            },
             {
               path: 'opreation-column',
               component: 'demo/auto-opreation-column',
@@ -739,7 +752,7 @@ export default defineMock([
         {
           id: 36,
           parentId: 0,
-          name: '组件封装',
+          name: 'Demos',
           type: 'CATALOG',
           routeName: null,
           routePath: '/component',
@@ -1005,7 +1018,7 @@ export default defineMock([
         },
         {
           value: 36,
-          label: '组件封装',
+          label: 'Demos',
           children: [
             {
               value: 108,
